@@ -1,25 +1,48 @@
-import React from 'react';
-import { Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { CheckBox, Text, TouchableOpacity, View } from 'react-native';
 import OpenUrlButton from './components/OpenUrlButton';
+// import CheckBox from '@react-native-community/checkbox';
 
 const App = () => {
-    const date = new Date();
+    const [date, setDate] = useState(new Date());
+    const [prevPage, setPrevPage] = useState(true);
     const dateStr = `${date.getFullYear()}${numberFormat(date.getMonth() + 1)}${numberFormat(date.getDate())}`;
-    const linkTemplate = `https://www.rail.co.il/taarif/pages/ordervaucherallcountry.aspx?FSID=5300&TSID=4600&CS=null`;
+    const pageLink = () => `https://www.rail.co.il/${prevPage ? '' : 'taarif/'}pages/${prevPage ? 'trainsearchresultnew' : 'ordervaucherallcountry'}.aspx`;
+    const linkTemplate = (tnum: number, hour: string) =>
+        `${pageLink()}?TNUM=${tnum}&IOT=true&IBA=false&FSID=5300&TSID=4600&DDATE=${dateStr}&Hour=${hour}&CS=null&TSP=${date.getTime()}`;
 
-    const hoursStr1 = numberFormat(date.getMinutes() > 30 ? date.getHours() + 1 : date.getHours());
-    const startHourStr1 = `${hoursStr1}${date.getMinutes() < 30 ? '30' : '00'}`;
-    const link1 = `${linkTemplate}&TNUM=${getTrainNumBerYakov(startHourStr1)}&DDATE=${dateStr}&Hour=${startHourStr1}`;
+    const startHourStr1 = `${numberFormat(date.getMinutes() > 30 ? date.getHours() + 1 : date.getHours())}${date.getMinutes() < 30 ? '30' : '00'}`;
+    const link1 = linkTemplate(getTrainNumBerYakov(startHourStr1), startHourStr1);
 
     const startHourStr2 = `${numberFormat(date.getHours())}${date.getMinutes() < 28 ? '28' : '58'}`;
-    const link2 = `${linkTemplate}&TNUM=${getTrainNumHasalom(startHourStr2)}&DDATE=${dateStr}&Hour=${startHourStr2}`;
+    const link2 = linkTemplate(getTrainNumHasalom(startHourStr2), startHourStr2);
 
     return (
-        <View>
-            <Text style={{ textAlign: 'center', fontWeight: 'bold', marginTop: 180 }}>רכבת ראשונה בשעה 06:00 מספר רכבת 224</Text>
-            <OpenUrlButton color="green" url={link1} title={'באר יעקב ' + displayHour(startHourStr1) + ' - ' + getTrainNumBerYakov(startHourStr2)} />
-            <Text style={{ textAlign: 'center', fontWeight: 'bold', marginTop: 100 }}>רכבת ראשונה בשעה 06:28 מספר רכבת 221</Text>
-            <OpenUrlButton color="blue" url={link2} title={'השלום ' + displayHour(startHourStr2) + ' - ' + getTrainNumHasalom(startHourStr2)} />
+        <View style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}>
+            <View style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', height: '80%', marginTop: 20 }}>
+                <OpenUrlButton
+                    text="רכבת ראשונה בשעה 06:00 מספר רכבת 224"
+                    color="rgb(60, 179, 113)"
+                    url={link1}
+                    title={'באר יעקב ' + displayHour(startHourStr1) + ' - ' + getTrainNumBerYakov(startHourStr1)}
+                />
+                <OpenUrlButton
+                    text="רכבת ראשונה בשעה 06:28 מספר רכבת 221"
+                    color="rgb(106, 90, 205)"
+                    url={link2}
+                    title={'השלום ' + displayHour(startHourStr2) + ' - ' + getTrainNumHasalom(startHourStr2)}
+                />
+            </View>
+            <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', alignContent: 'center' }}>
+                <CheckBox disabled={false} value={prevPage} onValueChange={(newValue: boolean) => setPrevPage(newValue)} />
+                <Text style={{ textAlignVertical: 'center' }}>prevPage</Text>
+            </View>
+            <TouchableOpacity
+                style={{ backgroundColor: 'rgb(0, 188, 255)', height: 60, display: 'flex', justifyContent: 'center' }}
+                onPress={() => setDate(new Date())}
+            >
+                <Text style={{ color: 'white', fontSize: 24, textAlign: 'center', textAlignVertical: 'center' }}>עדכן</Text>
+            </TouchableOpacity>
         </View>
     );
 };
